@@ -6,16 +6,16 @@ const port = 3042
 app.use(cors())
 app.use(express.json())
 
-const balances = {
-  '0x1': 100,
-  '0x2': 50,
-  '0x3': 75
-}
+const { generateWallets } = require('./utils')
+
+// Generate wallets
+const balances = generateWallets(3)
+console.log('Wallets', balances)
 
 app.get('/balance/:address', (req, res) => {
   const { address } = req.params
   const balance = balances[address] || 0
-  res.send({ balance })
+  res.send({ balance: balance.balance })
 })
 
 app.post('/send', (req, res) => {
@@ -24,12 +24,12 @@ app.post('/send', (req, res) => {
   setInitialBalance(sender)
   setInitialBalance(recipient)
 
-  if (balances[sender] < amount) {
+  if (balances[sender].balance < amount) {
     res.status(400).send({ message: 'Not enough funds!' })
   } else {
-    balances[sender] -= amount
-    balances[recipient] += amount
-    res.send({ balance: balances[sender] })
+    balances[sender].balance -= amount
+    balances[recipient].balance += amount
+    res.send({ balance: balances[sender].balance })
   }
 })
 
