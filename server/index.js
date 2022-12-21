@@ -6,7 +6,7 @@ const port = 3042
 app.use(cors())
 app.use(express.json())
 
-const { generateWallets } = require('./utils')
+const { generateWallets, getDataFromSignature, getAddress } = require('./utils')
 
 // Generate wallets
 const balances = generateWallets(3)
@@ -19,10 +19,15 @@ app.get('/balance/:address', (req, res) => {
 })
 
 app.post('/send', (req, res) => {
-  const { sender, recipient, amount } = req.body
+  const { payload, signature, recoveryBit } = req.body
+
+  // Check signature
+  const publicKey = getDataFromSignature(payload, signature, recoveryBit)
+  const sender = getAddress(publicKey, true)
+  const { amount, recipient } = payload
 
   setInitialBalance(sender)
-  setInitialBalance(recipient)
+  setInitialBalance(payload.recipient)
 
   if (balances[sender].balance < amount) {
     res.status(400).send({ message: 'Not enough funds!' })
