@@ -2,7 +2,8 @@ const secp = require('ethereum-cryptography/secp256k1.js')
 const { toHex } = require('ethereum-cryptography/utils.js')
 const { keccak256 } = require('ethereum-cryptography/keccak.js')
 
-const getAddress = (publicKey) => {
+const getAddress = (privateKey) => {
+  const publicKey = secp.getPublicKey(privateKey)
   const firstRemoved = publicKey.slice(1, publicKey.length)
   const hash = keccak256(firstRemoved)
   return hash.slice(hash.length - 20)
@@ -11,7 +12,7 @@ const getAddress = (publicKey) => {
 const generateRandomAddress = () => {
   const privateKey = secp.utils.randomPrivateKey()
   const publicKey = secp.getPublicKey(privateKey)
-  const address = getAddress(publicKey)
+  const address = getAddress(privateKey)
   return { privateKey: toHex(privateKey), publicKey: toHex(publicKey), address: `0x${toHex(address)}` }
 }
 
